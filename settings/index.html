@@ -114,8 +114,9 @@
             const goal = document.getElementById('goalInput').value;
             const amount = document.getElementById('amountInput').value;
             const goalText = encodeURIComponent(document.getElementById('goalTextInput').value);
-            // Génère le lien (adapte le chemin si besoin)
-            const base = window.location.origin + window.location.pathname.replace(/settings\/index\.html$/, '');
+            // Génère le lien (enlève "settings/" du chemin)
+            let base = window.location.origin + window.location.pathname;
+            base = base.replace(/settings\/index\.html$/, '').replace(/settings\/$/, '').replace(/index\.html$/, '');
             const url = `${base}?goal=${goal}&amount=${amount}&goaltext=${goalText}`;
             document.getElementById('link').href = url;
             document.getElementById('link').textContent = url;
