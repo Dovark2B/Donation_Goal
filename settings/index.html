@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Paramètres Donation Goal</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        html { box-sizing: border-box; }
+        *, *:before, *:after { box-sizing: inherit; }
+        body {
+            font-family: Arial, sans-serif;
+            background: #181818;
+            color: #dab903;
+            padding: 2em;
+            margin: 0;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        h2 { margin-top: 0; }
+        form {
+            width: 100%;
+            max-width: 400px;
+            background: #232323;
+            padding: 1.5em 1em;
+            border-radius: 10px;
+            box-shadow: 0 2px 8px #0006;
+            margin-bottom: 1em;
+        }
+        label, input {
+            font-size: 1.1em;
+        }
+        label {
+            display: block;
+            margin-bottom: 0.5em;
+        }
+        input[type="number"], input[type="text"] {
+            width: 100%;
+            padding: 0.5em;
+            margin-bottom: 1em;
+            border-radius: 5px;
+            border: none;
+            background: #333;
+            color: #dab903;
+        }
+        button, #copyBtn {
+            font-size: 1.1em;
+            padding: 0.5em 1.2em;
+            border-radius: 5px;
+            border: none;
+            background: #dab903;
+            color: #232323;
+            cursor: pointer;
+            margin-right: 0.5em;
+            margin-bottom: 0.5em;
+            transition: background 0.2s;
+        }
+        button:hover, #copyBtn:hover {
+            background: #ffe066;
+        }
+        #link {
+            margin-top: 1em;
+            display: block;
+            color: #fff;
+            background: #333;
+            padding: 0.5em;
+            border-radius: 5px;
+            word-break: break-all;
+            max-width: 100vw;
+            overflow-x: auto;
+        }
+        #msg {
+            margin-top: 0.5em;
+            min-height: 1.5em;
+        }
+        @media (max-width: 600px) {
+            form {
+                max-width: 98vw;
+                padding: 1em 0.5em;
+            }
+            #link {
+                font-size: 0.95em;
+                padding: 0.4em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <h2>Paramètres Donation Goal</h2>
+    <form id="settingsForm">
+        <label>Texte du goal&nbsp;:
+            <input type="text" id="goalTextInput" maxlength="100" placeholder="Ex: Mes chaussettes sur Vinted" required>
+        </label>
+        <label>Objectif (€)&nbsp;:
+            <input type="number" id="goalInput" min="1" required placeholder="Ex: 50000 (Le prix de mon cul)">
+        </label>
+        <label>Montant actuel (€)&nbsp;:
+            <input type="number" id="amountInput" min="0" step="0.01" required placeholder="Ex: -300 (Comme mon compte bancaire)">
+        </label>
+        <button type="submit">Générer le lien</button>
+    </form>
+    <button id="copyBtn" style="display:none;">Copier le lien</button>
+    <div id="msg"></div>
+    <a id="link" href="#" target="_blank" style="display:none"></a>
+    <script>
+        // Valeurs par défaut
+        document.getElementById('goalInput').value = "";
+        document.getElementById('amountInput').value = "";
+        document.getElementById('goalTextInput').value = "";
+
+        document.getElementById('settingsForm').onsubmit = function(e) {
+            e.preventDefault();
+            const goal = document.getElementById('goalInput').value;
+            const amount = document.getElementById('amountInput').value;
+            const goalText = encodeURIComponent(document.getElementById('goalTextInput').value);
+            // Génère le lien (adapte le chemin si besoin)
+            const base = window.location.origin + window.location.pathname.replace(/settings\/index\.html$/, '');
+            const url = `${base}?goal=${goal}&amount=${amount}&goaltext=${goalText}`;
+            document.getElementById('link').href = url;
+            document.getElementById('link').textContent = url;
+            document.getElementById('link').style.display = 'block';
+            document.getElementById('copyBtn').style.display = 'inline-block';
+            document.getElementById('msg').textContent = "Copiez ce lien dans OBS ou votre navigateur !";
+        };
+
+        document.getElementById('copyBtn').onclick = function() {
+            const link = document.getElementById('link').textContent;
+            navigator.clipboard.writeText(link).then(() => {
+                document.getElementById('msg').textContent = "Lien copié !";
+            }, () => {
+                document.getElementById('msg').textContent = "Erreur lors de la copie.";
+            });
+        };
+    </script>
+</body>
+</html>

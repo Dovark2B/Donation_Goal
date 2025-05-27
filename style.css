@@ -1,0 +1,155 @@
+.DonationBar {
+    position: relative;
+    width: 80vw;         
+    max-width: 1900px;     
+    height: 50vh;          
+    min-height: 50px;
+    max-height: 1200px;
+    margin: 0 auto;
+    background: #241400;   
+    border-radius: 0.2em;
+    box-shadow: 0 4px 25px 0 rgb(0, 0, 0),0 4px 25px 0 rgb(0, 0, 0), 0 0 0 0.2rem #311e00;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 0;
+}
+
+.ProgressionLiquid {
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 100%;
+    width: 100%;
+    background: #b99815;
+    z-index: 1;
+    overflow: hidden;
+    clip-path: inset(0 100% 0 0);
+    
+}
+
+
+
+body {
+    background: transparent;
+    text-align: center;
+    padding: 10vh 0;
+}
+
+
+.GoalText {
+    position: relative;
+    width: 100%;
+    text-align: center;
+    font-size: clamp(1.2rem, 4vw, 3rem);
+    font-family: Cinzel, Helvetica, sans-serif;
+    font-weight: bold;
+    letter-spacing: 0.025rem;
+    color: #ddb71f;    
+    mix-blend-mode: difference;
+    z-index: 4;
+    pointer-events: none;
+    user-select: none;
+}
+
+
+
+.liquid-svg-1 {
+    position: absolute;
+    left: -10%;
+    bottom: 100%;
+    width: 1000px; /* Responsive : adapte la taille à la largeur de la fenêtre */
+    height: 50vw;
+    pointer-events: none;
+    z-index: 2;
+    transform-origin: left bottom;
+    animation: wave-svg-move 2.25s linear infinite;
+    rotate: 90deg;
+    z-index: 3;
+
+}
+
+.liquid-svg-2 {
+    position: absolute;
+    left: -10%;
+    bottom: 100%;
+    width: 1000px; /* Responsive : adapte la taille à la largeur de la fenêtre */
+    height: 50vw;
+    pointer-events: none;
+    z-index: 2;
+    transform-origin: left bottom;
+    animation: wave-svg-move 2.25s linear infinite;
+    animation-delay: 1.125s; /* Délai pour la deuxième vague */
+    rotate: 90deg;
+    z-index: 3;
+
+}
+
+.ProgressionLiquid,
+.liquid-svg-1,
+.liquid-svg-2 {
+    transition: left 2s cubic-bezier(.07,.97,.43,1.01), clip-path 2s cubic-bezier(.05,1.13,.42,1.09);
+    
+}
+
+
+
+@keyframes wave-svg-move {
+    0% { transform: translateX(0); }
+    100% { transform: translateX(-100%); }
+}
+
+.corner-img {
+    position: absolute;
+    width: 20vw;         /* Responsive : adapte la taille à la largeur de la fenêtre */
+    max-width: 1200px;   /* Taille max pour éviter que ce soit trop gros */
+    min-width: 32px;    /* Taille min pour garder la visibilité */
+    height: auto;
+    z-index: 10;
+    pointer-events: none;
+    user-select: none;
+    mix-blend-mode: difference;
+    filter: saturate(1.4) brightness(0.8) hue-rotate(-1deg);
+}
+
+.corner-top-left {
+    top: 0;
+    left: 0;
+    rotate: 180deg; /* Rotation de 90 degrés */    
+    transform: scaleX(-1); /* Inverser horizontalement */
+}
+.corner-top-right {
+    top: 0;
+    right: 0;
+    rotate: 180deg;
+
+}
+.corner-bottom-left {
+    bottom: 0;
+    left: 0;
+
+}
+.corner-bottom-right {
+    bottom: 0;
+    right: 0; 
+    transform: scaleX(-1); /* Inverser horizontalement */
+}
+
+.GoalAmount {
+    position: absolute;
+    left: 50%;
+    bottom: 0px;
+    transform: translateX(-50%);
+    font-size: clamp(1.2rem, 2vw, 2rem);
+    font-family: Cinzel, Helvetica, sans-serif;
+    font-weight: bold;
+    letter-spacing: 0.025rem;
+    color: #ddb71f;    
+    mix-blend-mode: difference;
+    z-index: 4;
+    pointer-events: none;
+    user-select: none;
+}
+
+
