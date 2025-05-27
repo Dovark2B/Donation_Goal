@@ -98,6 +98,17 @@
         <label>Montant actuel (€)&nbsp;:
             <input type="number" id="amountInput" min="0" step="0.01" required placeholder="Ex: -300 (Comme mon compte bancaire)">
         </label>
+        <label>Police d'écriture&nbsp;:
+            <select id="fontInput" required>
+                <option value="Cinzel, Helvetica, sans-serif">Cinzel (par défaut)</option>
+                <option value="Arial, Helvetica, sans-serif">Arial</option>
+                <option value="Comic Sans MS, Comic Sans, cursive">Comic Sans MS</option>
+                <option value="Impact, Charcoal, sans-serif">Impact</option>
+                <option value="Georgia, serif">Georgia</option>
+                <option value="Times New Roman, Times, serif">Times New Roman</option>
+                <option value="Courier New, Courier, monospace">Courier New</option>
+            </select>
+        </label>
         <button type="submit">Générer le lien</button>
     </form>
     <button id="copyBtn" style="display:none;">Copier le lien</button>
@@ -109,15 +120,17 @@
         document.getElementById('amountInput').value = "";
         document.getElementById('goalTextInput').value = "";
 
+        // Modifie la génération du lien pour ajouter la police choisie
         document.getElementById('settingsForm').onsubmit = function(e) {
             e.preventDefault();
             const goal = document.getElementById('goalInput').value;
             const amount = document.getElementById('amountInput').value;
             const goalText = encodeURIComponent(document.getElementById('goalTextInput').value);
+            const font = encodeURIComponent(document.getElementById('fontInput').value);
             // Génère le lien (enlève "settings/" du chemin)
             let base = window.location.origin + window.location.pathname;
             base = base.replace(/settings\/index\.html$/, '').replace(/settings\/$/, '').replace(/index\.html$/, '');
-            const url = `${base}?goal=${goal}&amount=${amount}&goaltext=${goalText}`;
+            const url = `${base}?goal=${goal}&amount=${amount}&goaltext=${goalText}&font=${font}`;
             document.getElementById('link').href = url;
             document.getElementById('link').textContent = url;
             document.getElementById('link').style.display = 'block';

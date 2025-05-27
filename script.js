@@ -66,3 +66,7 @@ const goalText = getParam('goaltext', 'Donation Goal :  Nouveau micro');
 // Remplace les <br> (ou <br/>) par de vrais retours à la ligne HTML
 document.querySelector('.GoalText').innerHTML = goalText.replace(/<br\s*\/?>/gi, '<br>');
 
+// Récupère la police dans l'URL et applique-la à .GoalText
+const font = getParam('font', 'Cinzel, Helvetica, sans-serif');
+document.querySelector('.GoalText').style.fontFamily = decodeURIComponent(font);
+
