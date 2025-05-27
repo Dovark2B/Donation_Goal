@@ -139,9 +139,9 @@ body {
 .GoalAmount {
     position: absolute;
     left: 50%;
-    bottom: 0px;
+    bottom: -5px;
     transform: translateX(-50%);
-    font-size: clamp(1.2rem, 2vw, 2rem);
+    font-size: clamp(1.2rem, 3vw, 5rem);
     font-family: Cinzel, Helvetica, sans-serif;
     font-weight: bold;
     letter-spacing: 0.025rem;

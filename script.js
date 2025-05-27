@@ -62,7 +62,7 @@ ws.onmessage = (event) => {
 // Appel initial pour afficher la barre au démarrage
 updateLiquidWave(currentAmount, DONATION_GOAL);
 
-const goalText = getParam('goaltext', 'Donation Goal : Nouveau micro');
+const goalText = getParam('goaltext', 'Donation Goal :  Nouveau micro');
 // Remplace les <br> (ou <br/>) par de vrais retours à la ligne HTML
 document.querySelector('.GoalText').innerHTML = goalText.replace(/<br\s*\/?>/gi, '<br>');
 
