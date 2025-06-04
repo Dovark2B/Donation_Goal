@@ -16,19 +16,6 @@
     z-index: 0;
 }
 
-.ProgressionLiquid {
-    position: absolute;
-    top: 0;
-    left: 0;
-    height: 100%;
-    width: 100%;
-    background: #b99815;
-    z-index: 1;
-    overflow: hidden;
-    clip-path: inset(0 100% 0 0);
-    
-}
-
 
 
 body {
@@ -57,14 +44,14 @@ body {
 
 .liquid-svg-1 {
     position: absolute;
-    left: -10%;
+    left: -100%;
     bottom: 100%;
     width: 1000px; /* Responsive : adapte la taille à la largeur de la fenêtre */
-    height: 50vw;
+    height: 100vw;
     pointer-events: none;
     z-index: 2;
     transform-origin: left bottom;
-    animation: wave-svg-move 2.25s linear infinite;
+    animation: wave-svg-move 4s linear infinite;
     rotate: 90deg;
     z-index: 3;
 
@@ -72,15 +59,15 @@ body {
 
 .liquid-svg-2 {
     position: absolute;
-    left: -10%;
+    left: -100%;
     bottom: 100%;
     width: 1000px; /* Responsive : adapte la taille à la largeur de la fenêtre */
-    height: 50vw;
+    height: 100vw;
     pointer-events: none;
     z-index: 2;
     transform-origin: left bottom;
-    animation: wave-svg-move 2.25s linear infinite;
-    animation-delay: 1.125s; /* Délai pour la deuxième vague */
+    animation: wave-svg-move 4s linear infinite;
+    animation-delay: 2s; /* Délai pour la deuxième vague */
     rotate: 90deg;
     z-index: 3;
 
@@ -89,7 +76,7 @@ body {
 .ProgressionLiquid,
 .liquid-svg-1,
 .liquid-svg-2 {
-    transition: left 2s cubic-bezier(.07,.97,.43,1.01), clip-path 2s cubic-bezier(.05,1.13,.42,1.09);
+    transition: left 2s cubic-bezier(.16,.96,.46,1.23);
     
 }
 

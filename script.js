@@ -19,15 +19,24 @@ function animateNumber(obj, start, end, duration, goal) {
 }
 
 function updateLiquidWave(currentAmount, goalAmount) {
+  // Calculer le pourcentage (entre 0 et 1)
   const percent = Math.min(currentAmount / goalAmount, 1);
-  const minLeft = -4, maxLeft = 98;
-  const leftPercent = minLeft + (maxLeft - minLeft) * percent;
 
+  // Convertir en pourcentage CSS (-115% → -85%)
+  let leftPercent;
+  if (currentAmount >= goalAmount) {
+    leftPercent = 0; 
+  } else {
+    leftPercent = (1 - percent) * -100 - 15;
+  }
+
+  // Appliquer la position “left” directement sur tes SVG
   document.querySelectorAll('.liquid-svg-1, .liquid-svg-2')
-    .forEach(svg => svg.style.left = `${leftPercent}%`);
-  document.querySelector('.ProgressionLiquid')
-    .style.clipPath = `inset(0 calc(100% - ${leftPercent + 1}%) 0 0)`;
+    .forEach(svg => {
+      svg.style.left = `${leftPercent}%`;
+    });
 }
+
 
 function getParam(name, fallback) {
   const u = new URL(window.location.href);
