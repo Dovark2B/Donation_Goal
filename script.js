@@ -4,12 +4,20 @@
  */
 function animateNumber(obj, start, end, duration, goal) {
   let startTs = null;
-  const goalFormatted = goal.toLocaleString('fr-FR');
+  const goalFormatted = goal.toLocaleString('fr-FR', {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2
+  });
   const step = (ts) => {
+
     if (!startTs) startTs = ts;
     const progress = Math.min((ts - startTs) / duration, 1);
-    const currentValue = Math.floor(progress * (end - start) + start);
-    const currentFormatted = currentValue.toLocaleString('fr-FR');
+    const currentValue = progress * (end - start) + start;
+    const currentFormatted = currentValue.toLocaleString('fr-FR', {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2
+    });
+
     obj.innerHTML = `${currentFormatted}&nbsp;/&nbsp;${goalFormatted}&nbsp;€`;
     if (progress < 1) {
       window.requestAnimationFrame(step);
@@ -25,7 +33,7 @@ function updateLiquidWave(currentAmount, goalAmount) {
   // Convertir en pourcentage CSS (-115% → -85%)
   let leftPercent;
   if (currentAmount >= goalAmount) {
-    leftPercent = 0; 
+    leftPercent = 0;
   } else {
     leftPercent = (1 - percent) * -100 - 15;
   }
@@ -45,27 +53,33 @@ function getParam(name, fallback) {
   return (typeof fallback === 'number') ? parseFloat(v) : v;
 }
 
-let DONATION_GOAL   = getParam('goal',   100);
-let currentAmount   = getParam('amount', 0);
+let DONATION_GOAL = getParam('goal', 100);
+let currentAmount = getParam('amount', 0);
 let displayedAmount = currentAmount;
 
 const objAmount = document.getElementById('GoalAmount');
-// Affichage initial avec "/ goal €"
+// Affichage initial avec "/ goal €", format “xx,xx”
 if (objAmount) {
   objAmount.innerHTML =
-    `${displayedAmount.toLocaleString('fr-FR')}` +
-    `&nbsp;/&nbsp;${DONATION_GOAL.toLocaleString('fr-FR')}&nbsp;€`;
+    `${displayedAmount.toLocaleString('fr-FR', {
+       minimumFractionDigits: 2,
+       maximumFractionDigits: 2
+     })}` +
+    `&nbsp;/&nbsp;${DONATION_GOAL.toLocaleString('fr-FR', {
+       minimumFractionDigits: 2,
+       maximumFractionDigits: 2
+     })}&nbsp;€`;
 }
 
 // WS comme avant
 const WS_URL = 'ws://127.0.0.1:8080';
-const ws     = new WebSocket(WS_URL);
+const ws = new WebSocket(WS_URL);
 
 ws.addEventListener('open', () => {
   console.log(`✨ WS connecté à ${WS_URL}`);
   ws.send(JSON.stringify({
     request: "Subscribe",
-    id:      "sub_custom",
+    id: "sub_custom",
     events: { "General": ["Custom"] }
   }));
 });
