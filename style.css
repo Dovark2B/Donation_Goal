@@ -76,14 +76,16 @@ body {
 
 }
 
-.ProgressionLiquid,
 .liquid-svg-1,
 .liquid-svg-2 {
     transition: left 2s cubic-bezier(.16,.96,.46,1.23);
     
 }
 
-
+.liquid-svg-1.complete,
+.liquid-svg-2.complete {
+  transition: left 2s ease-out;
+}
 
 @keyframes wave-svg-move {
     0% { transform: translateX(0); }

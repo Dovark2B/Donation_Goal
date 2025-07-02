@@ -1,120 +1,98 @@
-/**
- * Anime la valeur d'un élément de start à end en duration ms,
- * en affichant "courant / objectif €".
- */
-function animateNumber(obj, start, end, duration, goal) {
-  let startTs = null;
-  const goalFormatted = goal.toLocaleString('fr-FR', {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2
-  });
-  const step = (ts) => {
-
-    if (!startTs) startTs = ts;
-    const progress = Math.min((ts - startTs) / duration, 1);
-    const currentValue = progress * (end - start) + start;
-    const currentFormatted = currentValue.toLocaleString('fr-FR', {
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2
-    });
-
-    obj.innerHTML = `${currentFormatted}&nbsp;/&nbsp;${goalFormatted}&nbsp;€`;
-    if (progress < 1) {
-      window.requestAnimationFrame(step);
-    }
-  };
-  window.requestAnimationFrame(step);
-}
-
-function updateLiquidWave(currentAmount, goalAmount) {
-  // Calculer le pourcentage (entre 0 et 1)
-  const percent = Math.min(currentAmount / goalAmount, 1);
-
-  // Convertir en pourcentage CSS (-115% → -85%)
-  let leftPercent;
-  if (currentAmount >= goalAmount) {
-    leftPercent = 0;
-  } else {
-    leftPercent = (1 - percent) * -100 - 15;
-  }
-
-  // Appliquer la position “left” directement sur tes SVG
-  document.querySelectorAll('.liquid-svg-1, .liquid-svg-2')
-    .forEach(svg => {
-      svg.style.left = `${leftPercent}%`;
-    });
-}
-
-
+// ----- 1) Helpers -----
 function getParam(name, fallback) {
   const u = new URL(window.location.href);
   const v = u.searchParams.get(name);
-  if (v === null) return fallback;
-  return (typeof fallback === 'number') ? parseFloat(v) : v;
+  return v === null
+    ? fallback
+    : (typeof fallback === 'number' ? parseFloat(v) : v);
 }
 
-let DONATION_GOAL = getParam('goal', 100);
-let currentAmount = getParam('amount', 0);
-let displayedAmount = currentAmount;
-
-const objAmount = document.getElementById('GoalAmount');
-// Affichage initial avec "/ goal €", format “xx,xx”
-if (objAmount) {
-  objAmount.innerHTML =
-    `${displayedAmount.toLocaleString('fr-FR', {
-       minimumFractionDigits: 2,
-       maximumFractionDigits: 2
-     })}` +
-    `&nbsp;/&nbsp;${DONATION_GOAL.toLocaleString('fr-FR', {
-       minimumFractionDigits: 2,
-       maximumFractionDigits: 2
-     })}&nbsp;€`;
-}
-
-// WS comme avant
-const WS_URL = 'ws://127.0.0.1:8080';
-const ws = new WebSocket(WS_URL);
-
-ws.addEventListener('open', () => {
-  console.log(`✨ WS connecté à ${WS_URL}`);
-  ws.send(JSON.stringify({
-    request: "Subscribe",
-    id: "sub_custom",
-    events: { "General": ["Custom"] }
-  }));
-});
-
-ws.addEventListener('message', ({ data }) => {
-  let payload;
-  try { payload = JSON.parse(data); }
-  catch { return; }
-  if (payload.request === "Hello") return;
-
-  const ev = payload.event;
-  if (ev?.source === "General" && ev?.type === "Custom") {
-    const d = payload.data;
-    const amount = parseFloat(String(d.amount).replace(',', '.')) || 0;
-    if (amount > 0) {
-      const old = displayedAmount;
-      const neu = displayedAmount + amount;
-      displayedAmount = neu;
-
-      // Anime le nombre courant sur 1s (1000ms)
-      animateNumber(objAmount, old, neu, 1000, DONATION_GOAL);
-
-      // Et la vague en parallèle
-      updateLiquidWave(displayedAmount, DONATION_GOAL);
-
-      console.log(`🎉 +${amount} reçu → total ${displayedAmount}`);
-    }
+function animateNumber(obj, start, end, duration, goal) {
+  let startTs = null;
+  const goalFmt = goal.toLocaleString('fr-FR', {
+    minimumFractionDigits: 2, maximumFractionDigits: 2
+  });
+  function step(ts) {
+    if (!startTs) startTs = ts;
+    const progress = Math.min((ts - startTs)/duration, 1);
+    const val = progress*(end - start) + start;
+    const valFmt = val.toLocaleString('fr-FR', {
+      minimumFractionDigits: 2, maximumFractionDigits: 2
+    });
+    obj.innerHTML = `${valFmt}&nbsp;/&nbsp;${goalFmt}&nbsp;€`;
+    if (progress < 1) window.requestAnimationFrame(step);
   }
+  window.requestAnimationFrame(step);
+}
+
+function updateLiquidWave(current, goal) {
+  const percent = Math.min(current/goal, 1);
+  const leftPercent = current >= goal ? 0 : (1 - percent)*-100 - 15;
+  document.querySelectorAll('.liquid-svg-1, .liquid-svg-2')
+    .forEach(svg => {
+      if (current >= goal) {
+      svg.classList.add('complete');
+    } else {
+      svg.classList.remove('complete');
+    }
+    
+    svg.style.left = `${leftPercent}%`;
+    });
+}
+
+// ----- 2) Variables qui seront assignées au chargement -----
+let DONATION_GOAL, displayedAmount, objAmount;
+
+// ----- 3) Handler commun -----
+function handleDonation(amount) {
+  console.log('→ handleDonation:', amount);
+  const old = displayedAmount;
+  const neu = old + amount;
+  displayedAmount = neu;
+  animateNumber(objAmount, old, neu, 1000, DONATION_GOAL);
+  updateLiquidWave(displayedAmount, DONATION_GOAL);
+  console.log(`🎉 +${amount} → total ${displayedAmount}`);
+}
+
+// ----- 4) Tout dans DOMContentLoaded -----
+window.addEventListener('DOMContentLoaded', () => {
+  // 4a) Récup des params et DOM
+  DONATION_GOAL   = getParam('goal', 100);
+  displayedAmount = getParam('amount', 0);
+  objAmount       = document.getElementById('GoalAmount');
+  
+  // 4b) Affichage initial
+  if (objAmount) {
+    objAmount.innerHTML =
+      `${displayedAmount.toLocaleString('fr-FR',{minimumFractionDigits:2,maximumFractionDigits:2})}` +
+      `&nbsp;/&nbsp;${DONATION_GOAL.toLocaleString('fr-FR',{minimumFractionDigits:2,maximumFractionDigits:2})}&nbsp;€`;
+  }
+  
+  // 4c) Init de la vague au chargement
+  updateLiquidWave(displayedAmount, DONATION_GOAL);
+
+  // 4d) Création du client Streamerbot (comme ton script d’alertes)
+  const client = new StreamerbotClient({
+    host: "127.0.0.1", port: 8080,
+    subscribe: "*",
+    onConnect:    () => console.log("✨ Connecté à Streamer.bot"),
+    onDisconnect: () => console.warn("⚠️ Déconnecté de Streamer.bot"),
+    onData: (payload) => {
+      if (!payload || !payload.event || !payload.data) return;
+      console.log("WS →", payload.event.source, payload.event.type, payload.data);
+      const { source, type } = payload.event;
+
+      // test-trigger Custom
+      if (source === "General" && type === "Custom") {
+        const amt = parseFloat(String(payload.data.amount).replace(",", ".")) || 0;
+        if (amt > 0) handleDonation(amt);
+        return;
+      }
+      // vraies donations
+      if (source === "TipeeeStream" && type === "Donation") {
+        const amt = parseFloat(String(payload.data.amount).replace(",", ".")) || 0;
+        if (amt > 0) handleDonation(amt);
+      }
+    }
+  });
 });
-
-// Initialisation de la vague
-updateLiquidWave(displayedAmount, DONATION_GOAL);
-
-// Texte et police (inchangé)
-document.querySelector('.GoalText').innerHTML =
-  getParam('goaltext', 'Donation Goal').replace(/<br\s*\/?>/gi, '<br>');
-document.querySelector('.GoalText').style.fontFamily =
-  decodeURIComponent(getParam('font', 'Cinzel, Helvetica, sans-serif'));
