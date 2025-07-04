@@ -71,6 +71,15 @@ window.addEventListener('DOMContentLoaded', () => {
   //  Init de la vague au chargement
   updateLiquidWave(displayedAmount, DONATION_GOAL);
 
+  const goalTextParam = getParam('goaltext', 'Donation Goal');
+   const fontParam = getParam('font', 'Cinzel, Helvetica, sans-serif');
+   const goalTextEl = document.querySelector('.GoalText');
+   if (goalTextEl) {
+       // remplacer les <br> s’ils sont encodés
+         goalTextEl.innerHTML    = goalTextParam.replace(/<br\s*\/?>/gi, '<br>');
+       goalTextEl.style.fontFamily = fontParam;
+     }
+
 
   const client = new StreamerbotClient({
     host: "127.0.0.1",
