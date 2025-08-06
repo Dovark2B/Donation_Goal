@@ -71,7 +71,7 @@ window.addEventListener('DOMContentLoaded', () => {
   //  Init de la vague au chargement
   updateLiquidWave(displayedAmount, DONATION_GOAL);
 
-  const goalTextParam = getParam('goaltext', 'Donation Goal');
+  const goalTextParam = getParam('goaltext', 'Donation Goal <br> Nouveau micro');
    const fontParam = getParam('font', 'Cinzel, Helvetica, sans-serif');
    const goalTextEl = document.querySelector('.GoalText');
    if (goalTextEl) {
