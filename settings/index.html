@@ -109,6 +109,20 @@
                 <option value="Courier New, Courier, monospace">Courier New</option>
             </select>
         </label>
+        <label>
+            <input type="checkbox" id="autoIncreaseInput"> 
+            Augmenter automatiquement l'objectif quand atteint
+        </label>
+        <div id="increaseAmountContainer" style="display: none;">
+            <label>Montant d'augmentation (€)&nbsp;:
+                <input type="number" 
+                       id="increaseAmountInput" 
+                       min="1" 
+                       step="1" 
+                       placeholder="Ex: 50"
+                       value="50">
+            </label>
+        </div>
         <button type="submit">Générer le lien</button>
     </form>
     <button id="copyBtn" style="display:none;">Copier le lien</button>
@@ -120,6 +134,12 @@
         document.getElementById('amountInput').value = "";
         document.getElementById('goalTextInput').value = "";
 
+        // Gestion de l'affichage du montant d'augmentation
+        document.getElementById('autoIncreaseInput').onchange = function() {
+            document.getElementById('increaseAmountContainer').style.display = 
+                this.checked ? 'block' : 'none';
+        };
+
         // Modifie la génération du lien pour ajouter la police choisie
         document.getElementById('settingsForm').onsubmit = function(e) {
             e.preventDefault();
@@ -127,15 +147,19 @@
             const amount = document.getElementById('amountInput').value;
             const goalText = encodeURIComponent(document.getElementById('goalTextInput').value);
             const font = encodeURIComponent(document.getElementById('fontInput').value);
+            const autoIncrease = document.getElementById('autoIncreaseInput').checked;
+            const increaseAmount = document.getElementById('increaseAmountInput').value;
+
             // Génère le lien (enlève "settings/" du chemin)
             let base = window.location.origin + window.location.pathname;
             base = base.replace(/settings\/index\.html$/, '').replace(/settings\/$/, '').replace(/index\.html$/, '');
-            const url = `${base}?goal=${goal}&amount=${amount}&goaltext=${goalText}&font=${font}`;
+            const url = `${base}?goal=${goal}&amount=${amount}&goaltext=${goalText}&font=${font}&autoIncrease=${autoIncrease}&increaseAmount=${increaseAmount}`;
+            
             document.getElementById('link').href = url;
             document.getElementById('link').textContent = url;
             document.getElementById('link').style.display = 'block';
             document.getElementById('copyBtn').style.display = 'inline-block';
-            document.getElementById('msg').textContent = "Copiez ce lien dans OBS ou votre navigateur !";
+            document.getElementById('msg').textContent = "Copiez ce lien dans OBS ou votre navigateur !";
         };
 
         document.getElementById('copyBtn').onclick = function() {
