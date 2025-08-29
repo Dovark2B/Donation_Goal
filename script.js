@@ -81,33 +81,43 @@ window.addEventListener('DOMContentLoaded', () => {
      }
 
 
+  // Remplace le listener WebSocket actuel par celui-ci
   const client = new StreamerbotClient({
     host: "127.0.0.1",
     port: 8080,
-    subscribe: {
-      // on garde le Custom-test pour simuler les dons
-      "General": ["Custom"],
-      // on ne s'abonne plus à TipeeeStream, on forward tout en Custom
-      // (ou si tu veux toujours écouter les vraies, tu peux laisser TipeeeStream: ["Donation"])
-    },
+    subscribe: "*",
     onConnect: () => console.log("✨ Connecté à Streamer.bot"),
-    onDisconnect: () => console.warn("⚠️ Déconnecté de Streamer.bot"),
+    onDisconnect: () => console.log("❌ Déconnecté de Streamer.bot"),
     onData: (payload) => {
-      if (!payload.event) return;
-      const { source, type } = payload.event;
+        if (!payload.event) return;
+        
+        // Log pour debug
+        console.log("Données reçues:", payload);
 
-      // --- cas du test-trigger Handmade ---
-      if (source === "General" && type === "Custom") {
-        // on ne traite que si payload.data.amount existe (don test)
-        const raw = payload.data?.amount;
-        if (raw != null) {
-          const amt = parseFloat(String(raw).replace(",", ".")) || 0;
-          if (amt > 0) handleDonation(amt);
+        // 1) Event standard (donation)
+        if (payload.event.source === "TipeeeStream" && payload.event.type === "Donation") {
+            const amount = parseFloat(String(payload.data.amount).replace(',', '.')) || 0;
+            if (amount > 0) {
+                currentAmount += amount;
+                updateLiquidWave(currentAmount, DONATION_GOAL);
+                console.log(`🎉 Don TipeeeStream: +${amount}€ → total ${currentAmount}€`);
+            }
+            return;
         }
-        return;
-      }
 
-      // (éventuellement d'autres cas…)
+        // 2) Event Custom (pour les tests et autres sources de dons)
+        if (payload.event.source === "General" && payload.event.type === "Custom") {
+            const data = payload.data;
+            // Support des deux formats (donation ou don)
+            if (data.type === "donation" || data.type === "don") {
+                const amount = parseFloat(String(data.amount).replace(',', '.')) || 0;
+                if (amount > 0) {
+                    currentAmount += amount;
+                    updateLiquidWave(currentAmount, DONATION_GOAL);
+                    console.log(`🎉 Don Custom: +${amount}€ → total ${currentAmount}€`);
+                }
+            }
+        }
     }
   });
 });
