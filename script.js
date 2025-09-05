@@ -26,23 +26,54 @@ function animateNumber(obj, start, end, duration, goal) {
 }
 
 function updateLiquidWave(current, goal) {
-    const percent = Math.min(current / goal, 1);
-    const leftPercent = current >= goal ? 0 : (1 - percent) * -100 - 15;
-    
-    document.querySelectorAll('.liquid-svg-1, .liquid-svg-2')
-        .forEach(svg => {
-            if (current >= goal) {
-                svg.classList.add('complete');
-                // La vague reste au max si on a atteint le goal
-                svg.style.left = '0%';
-            } else {
-                svg.classList.remove('complete');
-                svg.style.left = `${leftPercent}%`;
-            }
-        });
+  const percent = Math.min(current / goal, 1);
+  const leftPercent = current >= goal ? 0 : (1 - percent) * -100 - 15;
+
+  document.querySelectorAll('.liquid-svg-1, .liquid-svg-2')
+    .forEach(svg => {
+      if (current >= goal) {
+        svg.classList.add('complete');
+        svg.style.left = '0%';
+      } else {
+        svg.classList.remove('complete');
+        svg.style.left = `${leftPercent}%`;
+      }
+    });
 }
 
-// ----- 2) Variables qui seront assignées au chargement -----
+// ----- 1bis) Anti-doublon -----
+const seenDonations = new Map(); // key -> timestamp (ms)
+const DEDUPE_WINDOW_MS = 10_000;
+
+function isDuplicateDonation(key) {
+  const now = Date.now();
+  for (const [k, t] of seenDonations) {
+    if (now - t > DEDUPE_WINDOW_MS) seenDonations.delete(k);
+  }
+  if (seenDonations.has(key)) return true;
+  seenDonations.set(key, now);
+  return false;
+}
+
+function makeDonationKey(payload, amount) {
+  const src  = payload?.event?.source || '';
+  const type = payload?.event?.type || '';
+  const id =
+    payload?.data?.transactionId ||
+    payload?.data?.id ||
+    payload?.data?.paymentId ||
+    payload?.data?.uuid ||
+    '';
+  const who =
+    payload?.data?.username ||
+    payload?.data?.name ||
+    payload?.data?.email ||
+    '';
+  const amt = Number.parseFloat(amount).toFixed(2);
+  return `${src}|${type}|${id}|${who}|${amt}`;
+}
+
+// ----- 2) Variables assignées au chargement -----
 let DONATION_GOAL, displayedAmount, objAmount;
 let AUTO_INCREASE = false;
 let INCREASE_AMOUNT = 50;
@@ -50,54 +81,44 @@ let initialGoal = 0;
 
 // ----- 3) Handler commun -----
 function handleDonation(amount) {
-    console.log('→ handleDonation:', amount);
-    const old = displayedAmount;
-    const neu = old + amount;
-    displayedAmount = neu;
-    
-    // Si on dépasse le goal actuel
-    if (AUTO_INCREASE && neu >= DONATION_GOAL) {
-        // Le nouveau goal est le montant total + INCREASE_AMOUNT
-        const newGoal = neu + INCREASE_AMOUNT;
-        
-        // On anime d'abord jusqu'au goal actuel
-        animateNumber(objAmount, old, neu, 1000, DONATION_GOAL);
-        updateLiquidWave(neu, DONATION_GOAL);
-        
-        // Puis on augmente le goal
-        setTimeout(() => {
-            DONATION_GOAL = newGoal; // Goal = montant reçu + INCREASE_AMOUNT
-            console.log(`🎯 Goal atteint ! Nouveau goal : ${DONATION_GOAL}€`);
-            
-            // Et on met à jour l'affichage avec le nouveau goal
-            animateNumber(objAmount, neu, neu, 1000, DONATION_GOAL);
-            updateLiquidWave(neu, DONATION_GOAL);
-        }, 1500);
-    } else {
-        // Comportement normal si on n'atteint pas le goal
-        animateNumber(objAmount, old, neu, 1000, DONATION_GOAL);
-        updateLiquidWave(neu, DONATION_GOAL);
-    }
-    
-    console.log(`🎉 +${amount}€ → total ${displayedAmount}€ / ${DONATION_GOAL}€`);
+  console.log('→ handleDonation:', amount);
+  const old = displayedAmount;
+  const neu = old + amount;
+  displayedAmount = neu;
+
+  if (AUTO_INCREASE && neu >= DONATION_GOAL) {
+    const newGoal = neu + INCREASE_AMOUNT;
+
+    animateNumber(objAmount, old, neu, 1000, DONATION_GOAL);
+    updateLiquidWave(neu, DONATION_GOAL);
+
+    setTimeout(() => {
+      DONATION_GOAL = newGoal;
+      console.log(`🎯 Goal atteint ! Nouveau goal : ${DONATION_GOAL}€`);
+      animateNumber(objAmount, neu, neu, 1000, DONATION_GOAL);
+      updateLiquidWave(neu, DONATION_GOAL);
+    }, 1500);
+  } else {
+    animateNumber(objAmount, old, neu, 1000, DONATION_GOAL);
+    updateLiquidWave(neu, DONATION_GOAL);
+  }
+
+  console.log(`🎉 +${amount}€ → total ${displayedAmount}€ / ${DONATION_GOAL}€`);
 }
 
-// ----- Tout dans DOMContentLoaded -----
+// ----- 4) DOMContentLoaded -----
 window.addEventListener('DOMContentLoaded', () => {
-  // Récup des params et DOM
-  DONATION_GOAL = getParam('goal', 100);
-  initialGoal = DONATION_GOAL; // Garde en mémoire le goal initial
+  // Params et DOM
+  DONATION_GOAL   = getParam('goal', 100);
+  initialGoal     = DONATION_GOAL;
   displayedAmount = getParam('amount', 0);
-  AUTO_INCREASE = getParam('autoIncrease', 'false') === 'true';
+  AUTO_INCREASE   = getParam('autoIncrease', 'false') === 'true';
   INCREASE_AMOUNT = getParam('increaseAmount', 50);
-  objAmount = document.getElementById('GoalAmount');
+  objAmount       = document.getElementById('GoalAmount');
 
-  // Log les paramètres
   console.log(`📊 Goal initial: ${DONATION_GOAL}€`);
   console.log(`🔄 Auto-increase: ${AUTO_INCREASE ? 'Activé' : 'Désactivé'}`);
-  if (AUTO_INCREASE) {
-      console.log(`⬆️ Montant d'augmentation: ${INCREASE_AMOUNT}€`);
-  }
+  if (AUTO_INCREASE) console.log(`⬆️ Montant d'augmentation: ${INCREASE_AMOUNT}€`);
 
   // Affichage initial
   if (objAmount) {
@@ -106,20 +127,19 @@ window.addEventListener('DOMContentLoaded', () => {
       `&nbsp;/&nbsp;${DONATION_GOAL.toLocaleString('fr-FR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}&nbsp;€`;
   }
 
-  //  Init de la vague au chargement
+  // Vague initiale
   updateLiquidWave(displayedAmount, DONATION_GOAL);
 
+  // Texte & police
   const goalTextParam = getParam('goaltext', 'Donation Goal <br> Nouveau micro');
-   const fontParam = getParam('font', 'Cinzel, Helvetica, sans-serif');
-   const goalTextEl = document.querySelector('.GoalText');
-   if (goalTextEl) {
-       // remplacer les <br> s’ils sont encodés
-         goalTextEl.innerHTML    = goalTextParam.replace(/<br\s*\/?>/gi, '<br>');
-       goalTextEl.style.fontFamily = fontParam;
-     }
+  const fontParam     = getParam('font', 'Cinzel, Helvetica, sans-serif');
+  const goalTextEl    = document.querySelector('.GoalText');
+  if (goalTextEl) {
+    goalTextEl.innerHTML = goalTextParam.replace(/<br\s*\/?>/gi, '<br>');
+    goalTextEl.style.fontFamily = fontParam;
+  }
 
-
-  // Remplace le listener WebSocket actuel par celui-ci
+  // ----- 5) WebSocket → on ne garde QUE les Custom -----
   const client = new StreamerbotClient({
     host: "127.0.0.1",
     port: 8080,
@@ -127,34 +147,36 @@ window.addEventListener('DOMContentLoaded', () => {
     onConnect: () => console.log("✨ Connecté à Streamer.bot"),
     onDisconnect: () => console.log("❌ Déconnecté de Streamer.bot"),
     onData: (payload) => {
-        if (!payload.event) return;
-        
-        // Log pour debug
-        console.log("Données reçues:", payload);
+      if (!payload?.event) return;
 
-        // 1) Event standard (donation TipeeeStream)
-        if (payload.event.source === "TipeeeStream" && payload.event.type === "Donation") {
-            const amount = parseFloat(String(payload.data.amount).replace(',', '.')) || 0;
-            if (amount > 0) {
-                handleDonation(amount);
-            }
-            return;
-        }
+      // Log debug
+      console.log("Données reçues:", payload);
 
-        // 2) Event Custom (pour les tests et autres sources de dons)
-        if (payload.event.source === "General" && payload.event.type === "Custom") {
-            const data = payload.data;
-            // Support de tous les formats possibles
-            if (data.type?.toLowerCase().includes('don') || 
-                data.type?.toLowerCase().includes('donation') || 
-                data.type?.toLowerCase().includes('tip')) {
-                
-                const amount = parseFloat(String(data.amount).replace(',', '.')) || 0;
-                if (amount > 0) {
-                    handleDonation(amount);
-                }
-            }
+      // On ignore TOUT sauf: General → Custom
+      if (!(payload.event.source === "General" && payload.event.type === "Custom")) return;
+
+      const data = payload.data || {};
+      const typeStr = (data.type || '').toLowerCase();
+
+      // On ne traite que les customs de type don
+      if (
+        typeStr.includes('don') ||
+        typeStr.includes('donation') ||
+        typeStr.includes('tip')
+      ) {
+        // Le champ "amount" peut venir sous diverses formes (string "5" / "5,00" / nombre)
+        const amount = parseFloat(String(data.amount).replace(',', '.')) || 0;
+        if (amount > 0) {
+          const key = makeDonationKey(payload, amount);
+          if (!isDuplicateDonation(key)) {
+            handleDonation(amount);
+          } else {
+            console.log('⛔ Donation doublon ignorée:', key);
+          }
+        } else {
+          console.warn('⚠️ Custom Donation reçu sans montant valide:', data.amount);
         }
+      }
     }
   });
 });
